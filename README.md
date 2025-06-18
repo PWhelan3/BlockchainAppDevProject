@@ -8,11 +8,11 @@ Repo for my end of year Blockchain Application Development Project.
 Current is a blockchain based web app that lets artists mint geo-tagged NFTs linked to physical places.
 
 ## Tech Stack
-- Frontend: Next.js, Tailwind CSS, Mapbox GL JS
+- Frontend: React, Vite, Tailwind CSS, Mapbox GL JS
 - Web3: Solidity, Hardhat, RainbowKit, Wagmi
 - Blockchain: Polygon (Mumbai or Sepolia testnets)
 - Storage: IPFS (NFT.storage or Pinata)
-- Others: Superfluid
+- Others: Possibly Superfluid
 
 ## Project Goals
 Build a fully functioning and hosted version 1.0 of Current
