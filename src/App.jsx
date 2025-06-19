@@ -1,20 +1,41 @@
+import React from 'react'
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import './index.css'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { WagmiProvider } from 'wagmi'
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { config } from './config/wagmi'
+import Layout from './components/Layout'
+import HomePage from './pages/HomePage'
+import ProfilePage from './pages/ProfilePage'
+import ArtistProfilePage from './pages/ArtistProfilePage'
+import MapPage from './pages/MapPage'
+import MintPage from './pages/MintPage'
+import '@rainbow-me/rainbowkit/styles.css'
+
+const queryClient = new QueryClient()
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Blockchain App
-        </h1>
-        <p className="text-gray-600">
-          Ready to Go!
-        </p>
-      </div>
-    </div>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+          <Router>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/pages/ProfilePage" element={<ProfilePage />} />
+                <Route path="/pages/ArtistProfilePage" element={<ArtistProfilePage />} />
+                <Route path="/pages/MapPage" element={<MapPage />} />
+                <Route path="/pages/MintPage" element={<MintPage />} />
+              </Routes>
+            </Layout>
+          </Router>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   )
 }
 
