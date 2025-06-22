@@ -1,5 +1,5 @@
 import React from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, useChainId, useSwitchChain } from 'wagmi'
 import { Link } from 'react-router-dom'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { Map, Palette, PlusCircle, Sparkles } from 'lucide-react'

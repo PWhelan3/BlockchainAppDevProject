@@ -14,6 +14,7 @@ import {
   Camera,
   AlertCircle
 } from 'lucide-react'
+import { useAccount, useChainId, useSwitchChain } from 'wagmi'
 
 const MintPage = () => {
   // Mock wallet connection state for demo

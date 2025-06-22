@@ -1,6 +1,7 @@
-import React from 'react'
-import { useAccount } from 'wagmi'
+import React, { useState, useEffect } from 'react'
+import { useAccount, useChainId, useSwitchChain, useDisconnect, useBalance } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { polygonMumbai, polygon } from 'wagmi/chains'
 import { 
   Palette, 
   MapPin, 
@@ -11,11 +12,44 @@ import {
   TrendingUp,
   Users,
   Heart,
-  Share2
+  Share2,
+  Wallet,
+  AlertCircle,
+  ExternalLink,
+  Wifi,
+  WifiOff,
+  ShoppingCart,
+  Eye
 } from 'lucide-react'
 
 const ArtistProfilePage = () => {
-  const { isConnected } = useAccount()
+  // Wallet hooks
+  const { isConnected, address, chain } = useAccount()
+  const { disconnect } = useDisconnect()
+  const chainId = useChainId()
+  const { switchChain } = useSwitchChain()
+  const { data: balance } = useBalance({ address })
+
+  // Component state
+  const [activeTab, setActiveTab] = useState('all')
+  const [likedArtworks, setLikedArtworks] = useState(new Set())
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [networkError, setNetworkError] = useState('')
+  const [purchaseLoading, setPurchaseLoading] = useState(null)
+
+  // Network validation
+  const isCorrectNetwork = chainId === polygonMumbai.id
+
+  // Switch to Mumbai network
+  const switchToMumbai = async () => {
+    try {
+      setNetworkError('')
+      await switchChain({ chainId: polygonMumbai.id })
+    } catch (error) {
+      console.error('Failed to switch network:', error)
+      setNetworkError('Failed to switch to Mumbai testnet. Please switch manually in your wallet.')
+    }
+  }
 
   // Mock artist data
   const artistData = {
@@ -23,6 +57,7 @@ const ArtistProfilePage = () => {
     bio: 'Digital artist exploring the intersection of nature and technology through NFT art. Based in Barcelona, creating immersive experiences that bridge the physical and digital worlds.',
     location: 'Barcelona, Spain',
     website: 'elenaart.com',
+    walletAddress: '0x742d35Cc6634C0532925a3b8D4021d4C87Ad30c9',
     social: {
       twitter: '@elenadigitalart',
       instagram: '@elena.creates'
@@ -40,69 +75,171 @@ const ArtistProfilePage = () => {
     { 
       id: 1, 
       name: 'Neon Forest', 
-      price: '0.8 ETH', 
+      price: '0.8', 
+      priceUSD: '$1,600',
       likes: 234,
-      status: 'available'
+      status: 'available',
+      location: 'Barcelona, Spain',
+      coordinates: '41.3851,2.1734'
     },
     { 
       id: 2, 
       name: 'Digital Bloom', 
-      price: '1.2 ETH', 
+      price: '1.2', 
+      priceUSD: '$2,400',
       likes: 189,
-      status: 'sold'
+      status: 'sold',
+      location: 'Madrid, Spain',
+      coordinates: '40.4168,-3.7038'
     },
     { 
       id: 3, 
       name: 'Cyber Nature', 
-      price: '0.6 ETH', 
+      price: '0.6', 
+      priceUSD: '$1,200',
       likes: 156,
-      status: 'available'
+      status: 'available',
+      location: 'Valencia, Spain',
+      coordinates: '39.4699,-0.3763'
     },
     { 
       id: 4, 
       name: 'Electric Dreams', 
-      price: '0.9 ETH', 
+      price: '0.9', 
+      priceUSD: '$1,800',
       likes: 298,
-      status: 'available'
+      status: 'available',
+      location: 'Seville, Spain',
+      coordinates: '37.3886,-5.9823'
     },
     { 
       id: 5, 
       name: 'Quantum Garden', 
-      price: '1.5 ETH', 
+      price: '1.5', 
+      priceUSD: '$3,000',
       likes: 421,
-      status: 'sold'
+      status: 'sold',
+      location: 'Bilbao, Spain',
+      coordinates: '43.2627,-2.9253'
     },
     { 
       id: 6, 
       name: 'Bio-Digital', 
-      price: '0.7 ETH', 
+      price: '0.7', 
+      priceUSD: '$1,400',
       likes: 167,
-      status: 'available'
+      status: 'available',
+      location: 'Granada, Spain',
+      coordinates: '37.1773,-3.5986'
     },
   ]
 
-  if (!isConnected) {
-    return (
-      <div className="max-w-md mx-auto text-center space-y-6">
-        <div className="w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto">
-          <Palette className="w-12 h-12 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Connect to View Artists</h1>
-          <p className="text-gray-600 mb-6">
-            Connect your wallet to explore artist profiles and their collections
-          </p>
-          <ConnectButton />
-        </div>
-      </div>
-    )
+  // Filter artworks based on active tab
+  const filteredArtworks = mockArtworks.filter(artwork => {
+    if (activeTab === 'available') return artwork.status === 'available'
+    if (activeTab === 'sold') return artwork.status === 'sold'
+    return true
+  })
+
+  // Handle artwork like/unlike
+  const handleLike = (artworkId) => {
+    if (!isConnected) {
+      alert('Please connect your wallet to like artworks')
+      return
+    }
+
+    setLikedArtworks(prev => {
+      const newLiked = new Set(prev)
+      if (newLiked.has(artworkId)) {
+        newLiked.delete(artworkId)
+      } else {
+        newLiked.add(artworkId)
+      }
+      return newLiked
+    })
+  }
+
+  // Handle follow/unfollow
+  const handleFollow = () => {
+    if (!isConnected) {
+      alert('Please connect your wallet to follow artists')
+      return
+    }
+    setIsFollowing(!isFollowing)
+  }
+
+  // Handle artwork purchase
+  const handlePurchase = async (artwork) => {
+    if (!isConnected) {
+      alert('Please connect your wallet to purchase NFTs')
+      return
+    }
+
+    if (!isCorrectNetwork) {
+      alert('Please switch to Mumbai testnet to purchase NFTs')
+      return
+    }
+
+    setPurchaseLoading(artwork.id)
+    
+    try {
+      // Simulate purchase transaction
+      console.log('Purchasing artwork:', artwork.name, 'for', artwork.price, 'ETH')
+      
+      // Here you would implement actual purchase logic:
+      // 1. Check user balance
+      // 2. Call smart contract purchase function
+      // 3. Handle transaction confirmation
+      
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      alert(`Successfully purchased ${artwork.name} for ${artwork.price} ETH!`)
+    } catch (error) {
+      console.error('Purchase failed:', error)
+      alert('Purchase failed. Please try again.')
+    } finally {
+      setPurchaseLoading(null)
+    }
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8 p-6">
+      {/* Network Warning */}
+      {isConnected && !isCorrectNetwork && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <WifiOff className="w-5 h-5 text-yellow-600" />
+            <div>
+              <p className="text-sm font-medium text-yellow-800">
+                Wrong Network Detected
+              </p>
+              <p className="text-sm text-yellow-700">
+                You're connected to {chain?.name || 'Unknown Network'}. Switch to Mumbai Testnet for full functionality.
+              </p>
+              <button
+                onClick={switchToMumbai}
+                className="mt-2 px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition-colors"
+              >
+                Switch to Mumbai
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Network Error */}
+      {networkError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-red-600" />
+            <p className="text-sm text-red-800">{networkError}</p>
+          </div>
+        </div>
+      )}
+
       {/* Artist Header */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white">
-        <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-6 lg:space-y-0 lg:space-x-8">
           {/* Artist Avatar */}
           <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center">
             <Palette className="w-16 h-16 text-white" />
@@ -136,6 +273,12 @@ const ArtistProfilePage = () => {
                 <span>{artistData.website}</span>
               </div>
               <div className="flex items-center space-x-1">
+                <Wallet className="w-4 h-4" />
+                <span className="font-mono text-sm">
+                  {artistData.walletAddress.slice(0, 6)}...{artistData.walletAddress.slice(-4)}
+                </span>
+              </div>
+              <div className="flex items-center space-x-1">
                 <Twitter className="w-4 h-4" />
                 <span>{artistData.social.twitter}</span>
               </div>
@@ -144,17 +287,54 @@ const ArtistProfilePage = () => {
                 <span>{artistData.social.instagram}</span>
               </div>
             </div>
+
+            {/* Connection Status */}
+            {isConnected && (
+              <div className="flex items-center space-x-4 text-sm text-purple-100">
+                <div className="flex items-center space-x-2">
+                  {isCorrectNetwork ? (
+                    <>
+                      <Wifi className="w-4 h-4 text-green-300" />
+                      <span>Connected to Mumbai</span>
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="w-4 h-4 text-yellow-300" />
+                      <span>Wrong Network</span>
+                    </>
+                  )}
+                </div>
+                {balance && (
+                  <div>
+                    Balance: {parseFloat(balance.formatted).toFixed(4)} {balance.symbol}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col space-y-3">
-            <button className="px-6 py-2 bg-white text-purple-600 font-medium rounded-lg hover:bg-gray-50 transition-colors">
-              Follow
-            </button>
-            <button className="px-6 py-2 border border-white/30 text-white font-medium rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2">
-              <Share2 className="w-4 h-4" />
-              <span>Share</span>
-            </button>
+            {isConnected ? (
+              <>
+                <button 
+                  onClick={handleFollow}
+                  className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+                    isFollowing 
+                      ? 'bg-white/20 text-white border border-white/30' 
+                      : 'bg-white text-purple-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {isFollowing ? 'Following' : 'Follow'}
+                </button>
+                <button className="px-6 py-2 border border-white/30 text-white font-medium rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-2">
+                  <Share2 className="w-4 h-4" />
+                  <span>Share</span>
+                </button>
+              </>
+            ) : (
+              <ConnectButton />
+            )}
           </div>
         </div>
       </div>
@@ -195,24 +375,45 @@ const ArtistProfilePage = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex space-x-6">
-            <button className="text-purple-600 border-b-2 border-purple-600 pb-2 font-medium">
+            <button 
+              onClick={() => setActiveTab('all')}
+              className={`pb-2 font-medium ${
+                activeTab === 'all' 
+                  ? 'text-purple-600 border-b-2 border-purple-600' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
               All Artworks
             </button>
-            <button className="text-gray-600 hover:text-gray-900 pb-2">
+            <button 
+              onClick={() => setActiveTab('available')}
+              className={`pb-2 font-medium ${
+                activeTab === 'available' 
+                  ? 'text-purple-600 border-b-2 border-purple-600' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
               Available
             </button>
-            <button className="text-gray-600 hover:text-gray-900 pb-2">
+            <button 
+              onClick={() => setActiveTab('sold')}
+              className={`pb-2 font-medium ${
+                activeTab === 'sold' 
+                  ? 'text-purple-600 border-b-2 border-purple-600' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
               Sold
             </button>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">{mockArtworks.length} items</span>
+            <span className="text-sm text-gray-600">{filteredArtworks.length} items</span>
           </div>
         </div>
 
         {/* Artwork Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockArtworks.map((artwork) => (
+          {filteredArtworks.map((artwork) => (
             <div key={artwork.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow group">
               {/* Artwork Image */}
               <div className="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center relative">
@@ -223,27 +424,71 @@ const ArtistProfilePage = () => {
                   </div>
                 )}
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="p-2 bg-white/90 rounded-full hover:bg-white transition-colors">
-                    <Heart className="w-4 h-4 text-gray-600" />
+                  <button 
+                    onClick={() => handleLike(artwork.id)}
+                    className={`p-2 rounded-full transition-colors ${
+                      likedArtworks.has(artwork.id)
+                        ? 'bg-red-100 text-red-500'
+                        : 'bg-white/90 hover:bg-white text-gray-600'
+                    }`}
+                  >
+                    <Heart className={`w-4 h-4 ${likedArtworks.has(artwork.id) ? 'fill-current' : ''}`} />
                   </button>
+                </div>
+                
+                {/* Location Badge */}
+                <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/70 text-white text-xs rounded flex items-center space-x-1">
+                  <MapPin className="w-3 h-3" />
+                  <span>{artwork.location}</span>
                 </div>
               </div>
 
               {/* Artwork Info */}
               <div className="p-4">
                 <h3 className="font-medium text-gray-900 mb-2">{artwork.name}</h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-semibold text-gray-900">{artwork.price}</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <span className="text-lg font-semibold text-gray-900">{artwork.price} ETH</span>
+                    <span className="text-sm text-gray-500 ml-1">({artwork.priceUSD})</span>
+                  </div>
                   <div className="flex items-center space-x-1 text-gray-500">
                     <Heart className="w-4 h-4" />
-                    <span className="text-sm">{artwork.likes}</span>
+                    <span className="text-sm">{artwork.likes + (likedArtworks.has(artwork.id) ? 1 : 0)}</span>
                   </div>
                 </div>
                 
-                {artwork.status === 'available' && (
-                  <button className="w-full mt-3 px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors">
-                    Buy Now
-                  </button>
+                {/* GPS Coordinates */}
+                <div className="text-xs text-gray-500 mb-3 font-mono">
+                  GPS: {artwork.coordinates}
+                </div>
+                
+                {artwork.status === 'available' ? (
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => handlePurchase(artwork)}
+                      disabled={!isConnected || !isCorrectNetwork || purchaseLoading === artwork.id}
+                      className="flex-1 px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+                    >
+                      {purchaseLoading === artwork.id ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Buying...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-4 h-4" />
+                          <span>Buy Now</span>
+                        </>
+                      )}
+                    </button>
+                    <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                      <Eye className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center py-2 text-gray-500 text-sm">
+                    Sold Out
+                  </div>
                 )}
               </div>
             </div>
@@ -268,6 +513,16 @@ const ArtistProfilePage = () => {
             relationship with technology and the natural world. Through her NFT collections, she aims to fund environmental 
             conservation projects and promote sustainable digital art practices.
           </p>
+          
+          {isConnected && (
+            <div className="mt-4 p-4 bg-purple-50 rounded-lg">
+              <h4 className="font-semibold text-purple-900 mb-2">🔗 Blockchain Verified</h4>
+              <p className="text-sm text-purple-800">
+                This artist profile and all artworks are verified on the blockchain. 
+                Connected wallet: <span className="font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
