@@ -1,10 +1,32 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAccount, useChainId, useSwitchChain } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { Map, MapPin, Search, Filter, Globe } from 'lucide-react'
+import { 
+  Map, 
+  MapPin, 
+  Search, 
+  Filter, 
+  Globe, 
+  User, 
+  Star, 
+  Palette, 
+  Settings, 
+  LogOut,
+  X,
+  ChevronDown,
+  Minus,
+  Plus
+} from 'lucide-react'
 
 const MapPage = () => {
   const { isConnected } = useAccount()
+  const [showNotification, setShowNotification] = useState(true)
+  const [searchRadius, setSearchRadius] = useState(50)
+  const [activeFilters, setActiveFilters] = useState({
+    currentlyHappening: true,
+    free: true,
+    publiclyAccessible: true
+  })
 
   // Mock location data
   const mockLocations = [
@@ -17,146 +39,307 @@ const MapPage = () => {
 
   if (!isConnected) {
     return (
-      <div className="max-w-md mx-auto text-center space-y-6">
-        <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto">
-          <Map className="w-12 h-12 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Explore the Art World</h1>
-          <p className="text-gray-600 mb-6">
-            Connect your wallet to discover artists and NFTs from around the globe
-          </p>
-          <ConnectButton />
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center space-y-6 p-8">
+          <div className="w-24 h-24 bg-gradient-to-r from-teal-500 to-purple-500 rounded-full flex items-center justify-center mx-auto">
+            <Map className="w-12 h-12 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-white mb-2">Explore the Art World</h1>
+            <p className="text-gray-400 mb-6">
+              Connect your wallet to discover artists and NFTs from around the globe
+            </p>
+            <ConnectButton />
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold text-gray-900">Global Art Map</h1>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Discover artists and NFT collections from around the world. Explore different regions 
-          and connect with the global creative community.
-        </p>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by city, country, or artist..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex gap-2">
-            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Filter className="w-4 h-4" />
-              <span>Filters</span>
-            </button>
-            <button className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-              <Globe className="w-4 h-4" />
-              <span>View Map</span>
-            </button>
-          </div>
+    <div className="min-h-screen bg-gray-100 flex">
+      {/* Sidebar Navigation */}
+      <div className="w-64 bg-white shadow-lg flex flex-col">
+        {/* Logo/Brand */}
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-900">Current</h1>
         </div>
-      </div>
 
-      {/* Map Placeholder */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="h-96 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <Map className="w-16 h-16 text-gray-400 mx-auto" />
+        {/* User Profile Section */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center">
+              <User className="w-6 h-6 text-white" />
+            </div>
             <div>
-              <h3 className="text-lg font-medium text-gray-900">Interactive Map Coming Soon</h3>
-              <p className="text-gray-600">MapBox GL JS integration will be implemented here</p>
+              <div className="font-medium text-gray-900">My</div>
+              <div className="text-sm text-gray-600">Interests</div>
             </div>
           </div>
         </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2">
+            <li>
+              <a href="#" className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <Palette className="w-5 h-5" />
+                <span>Explore</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <Star className="w-5 h-5" />
+                <span>Featured</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <User className="w-5 h-5" />
+                <span>Mint NFTs</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center space-x-3 px-3 py-2 bg-gray-100 text-gray-900 rounded-lg font-medium">
+                <MapPin className="w-5 h-5" />
+                <span>Map</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        {/* Bottom Menu */}
+        <div className="p-4 border-t border-gray-200">
+          <ul className="space-y-2">
+            <li>
+              <a href="#" className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <Settings className="w-5 h-5" />
+                <span>Preference</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <LogOut className="w-5 h-5" />
+                <span>Sign out</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
 
-      {/* Location Stats */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Popular Locations</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockLocations.map((location) => (
-            <div key={location.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-5 h-5 text-purple-500" />
-                  <div>
-                    <h3 className="font-medium text-gray-900">{location.city}</h3>
-                    <p className="text-sm text-gray-600">{location.country}</p>
-                  </div>
+      {/* Main Content Area */}
+      <div className="flex-1 relative">
+        {/* Top Navigation Bar */}
+        <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex space-x-8">
+              <button className="text-gray-900 font-medium border-b-2 border-purple-500 pb-1">Map</button>
+              <button className="text-gray-600 hover:text-gray-900">Profile</button>
+              <button className="text-gray-600 hover:text-gray-900">Artist Profile</button>
+              <button className="text-gray-600 hover:text-gray-900">Connect Wallet</button>
+            </div>
+            <button className="p-2">
+              <div className="w-6 h-6 flex flex-col justify-center space-y-1">
+                <div className="w-full h-0.5 bg-gray-600"></div>
+                <div className="w-full h-0.5 bg-gray-600"></div>
+                <div className="w-full h-0.5 bg-gray-600"></div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Notification Banner */}
+        {showNotification && (
+          <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Palette className="w-5 h-5 text-teal-400" />
+              <div>
+                <div className="font-medium">New Artworks Ongoing!</div>
+                <div className="text-sm text-gray-300">
+                  Welcome! Discover the latest NFTs and events in your area. Dive into the world of art like never before!
                 </div>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            </div>
+            <button 
+              onClick={() => setShowNotification(false)}
+              className="text-gray-400 hover:text-white p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
+        {/* Map Container */}
+        <div className="relative h-full">
+          {/* Map Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-green-50 to-blue-200">
+            {/* Dublin Map Mockup */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-4 text-gray-600">
+                <Map className="w-24 h-24 mx-auto opacity-30" />
                 <div>
-                  <div className="text-2xl font-bold text-purple-600">{location.artists}</div>
-                  <div className="text-gray-600">Artists</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-pink-600">{location.nfts.toLocaleString()}</div>
-                  <div className="text-gray-600">NFTs</div>
+                  <h3 className="text-xl font-medium">Interactive Map</h3>
+                  <p>Dublin area shown - MapBox integration would display here</p>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* Featured Artists by Region */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Featured Artists by Region</h2>
-        
-        <div className="space-y-6">
-          {['North America', 'Europe', 'Asia'].map((region) => (
-            <div key={region} className="border-b border-gray-100 last:border-b-0 pb-6 last:pb-0">
-              <h3 className="font-medium text-gray-900 mb-4">{region}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-medium">A{i}</span>
+          {/* Search/Filter Panel */}
+          <div className="absolute top-6 right-6 w-80 bg-gray-800 text-white rounded-lg shadow-2xl overflow-hidden">
+            {/* Panel Header */}
+            <div className="bg-teal-600 px-6 py-4">
+              <h3 className="text-lg font-semibold">Explore the Map</h3>
+              <p className="text-sm text-teal-100 mt-1">Find what's on near you...</p>
+            </div>
+
+            {/* Search Form */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Search info</label>
+                <div className="relative">
+                  <select className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white appearance-none">
+                    <option>What are you looking for?</option>
+                    <option>Artists</option>
+                    <option>NFTs</option>
+                    <option>Events</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              <div>
+                <div className="relative">
+                  <select className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white appearance-none">
+                    <option>Where?</option>
+                    <option>Dublin</option>
+                    <option>London</option>
+                    <option>New York</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              <div>
+                <div className="relative">
+                  <select className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white appearance-none">
+                    <option>When?</option>
+                    <option>Today</option>
+                    <option>This Week</option>
+                    <option>This Month</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              <div>
+                <div className="relative">
+                  <select className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white appearance-none">
+                    <option>Genre?</option>
+                    <option>Digital Art</option>
+                    <option>Photography</option>
+                    <option>Abstract</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Filters Section */}
+              <div className="pt-4 border-t border-gray-700">
+                <h4 className="text-sm font-medium text-teal-400 mb-3">Filters</h4>
+                
+                <div className="space-y-3">
+                  <label className="flex items-center justify-between">
+                    <span className="text-sm text-gray-300">Currently Happening?</span>
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={activeFilters.currentlyHappening}
+                        onChange={(e) => setActiveFilters({...activeFilters, currentlyHappening: e.target.checked})}
+                        className="sr-only"
+                      />
+                      <div className={`w-10 h-6 rounded-full transition-colors ${activeFilters.currentlyHappening ? 'bg-teal-500' : 'bg-gray-600'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${activeFilters.currentlyHappening ? 'translate-x-5 mt-1' : 'translate-x-1 mt-1'}`}></div>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">Artist {i}</h4>
-                      <p className="text-sm text-gray-600">12 NFTs • 0.5 ETH avg</p>
+                  </label>
+
+                  <label className="flex items-center justify-between">
+                    <span className="text-sm text-gray-300">Free?</span>
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={activeFilters.free}
+                        onChange={(e) => setActiveFilters({...activeFilters, free: e.target.checked})}
+                        className="sr-only"
+                      />
+                      <div className={`w-10 h-6 rounded-full transition-colors ${activeFilters.free ? 'bg-teal-500' : 'bg-gray-600'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${activeFilters.free ? 'translate-x-5 mt-1' : 'translate-x-1 mt-1'}`}></div>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center justify-between">
+                    <span className="text-sm text-gray-300">Publicly Accessible</span>
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={activeFilters.publiclyAccessible}
+                        onChange={(e) => setActiveFilters({...activeFilters, publiclyAccessible: e.target.checked})}
+                        className="sr-only"
+                      />
+                      <div className={`w-10 h-6 rounded-full transition-colors ${activeFilters.publiclyAccessible ? 'bg-teal-500' : 'bg-gray-600'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out transform ${activeFilters.publiclyAccessible ? 'translate-x-5 mt-1' : 'translate-x-1 mt-1'}`}></div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Search Radius */}
+              <div className="pt-4 border-t border-gray-700">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-300">Search Radius</span>
+                  <button 
+                    onClick={() => setSearchRadius(Math.max(1, searchRadius - 10))}
+                    className="w-6 h-6 bg-gray-700 rounded border border-gray-600 flex items-center justify-center hover:bg-gray-600"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </button>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <span className="text-xs text-gray-400">Less</span>
+                  <div className="flex-1 relative">
+                    <div className="w-full h-2 bg-gray-700 rounded-full">
+                      <div 
+                        className="h-2 bg-teal-500 rounded-full relative"
+                        style={{ width: `${(searchRadius / 100) * 100}%` }}
+                      >
+                        <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-sm border-2 border-teal-500"></div>
+                      </div>
                     </div>
                   </div>
-                ))}
+                  <span className="text-xs text-gray-400">More</span>
+                  <button 
+                    onClick={() => setSearchRadius(Math.min(100, searchRadius + 10))}
+                    className="w-6 h-6 bg-gray-700 rounded border border-gray-600 flex items-center justify-center hover:bg-gray-600"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-3 pt-4">
+                <button className="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-lg transition-colors">
+                  Save
+                </button>
+                <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition-colors">
+                  Cancel
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Global Stats */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white">
-        <h2 className="text-2xl font-bold mb-6 text-center">Global Community</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <div className="text-3xl font-bold mb-2">89</div>
-            <div className="text-purple-100">Countries</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold mb-2">1,247</div>
-            <div className="text-purple-100">Cities</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold mb-2">12,456</div>
-            <div className="text-purple-100">Artists</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold mb-2">156K</div>
-            <div className="text-purple-100">NFTs</div>
           </div>
         </div>
       </div>
