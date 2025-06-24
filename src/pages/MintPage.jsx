@@ -14,11 +14,11 @@ import {
   Camera,
   AlertCircle
 } from 'lucide-react'
-import { useAccount, useChainId, useSwitchChain } from 'wagmi'
+import { useAccount } from 'wagmi'
+import { WalletButton } from '../components/WalletButton'
 
 const MintPage = () => {
-  // Mock wallet connection state for demo
-  const [isConnected, setIsConnected] = useState(true)
+  const { isConnected } = useAccount() // Use actual wallet connection
   
   const [formData, setFormData] = useState({
     name: '',
@@ -135,15 +135,6 @@ const MintPage = () => {
     // 4. Handle transaction confirmation
   }
 
-  const ConnectButton = () => (
-    <button 
-      onClick={() => setIsConnected(!isConnected)}
-      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-    >
-      {isConnected ? 'Connected' : 'Connect Wallet'}
-    </button>
-  )
-
   if (!isConnected) {
     return (
       <div className="max-w-md mx-auto text-center space-y-6 p-8">
@@ -155,7 +146,7 @@ const MintPage = () => {
           <p className="text-gray-600 mb-6">
             Connect your wallet to start minting location-based NFTs with geo data
           </p>
-          <ConnectButton />
+          <WalletButton size="lg" />
         </div>
       </div>
     )
@@ -200,6 +191,7 @@ const MintPage = () => {
               <input
                 type="file"
                 id="file-upload"
+                data-testid="file-upload-input"
                 className="hidden"
                 accept="image/*,video/*,audio/*"
                 onChange={handleFileChange}

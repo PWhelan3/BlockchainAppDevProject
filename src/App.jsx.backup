@@ -1,4 +1,3 @@
-// src/App.jsx - Updated with all route fixes
 import React from 'react'
 import './App.css'
 import './index.css'
@@ -6,73 +5,53 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { WagmiProvider } from 'wagmi'
 import { RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Toaster } from 'react-hot-toast'
 import { config } from './config/wagmi'
 
-// Import all page components
+// Import your existing components
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ProfilePage from './pages/ProfilePage'
 import ArtistProfilePage from './pages/ArtistProfilePage'
 import MapPage from './pages/MapPage'
 import MintPage from './pages/MintPage'
-import ClaimPage from './pages/ClaimPage'
-import NotFoundPage from './pages/NotFoundPage'
 
 // Import wallet integration components
 import ProtectedRoute from './components/ProtectedRoute'
-import { NetworkStatus } from './components/NetworkStatus'
 
-// RainbowKit styles
+// RainbowKit styles - imported at component level to ensure proper loading
 import '@rainbow-me/rainbowkit/styles.css'
 
-/**
- * Query client configuration for React Query
- * Handles caching and background refetching for wallet/contract data
- */
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
       staleTime: 1000 * 60 * 5, // 5 minutes
-      cacheTime: 1000 * 60 * 10, // 10 minutes
     },
   },
 })
 
-/**
- * Main App Component
- * 
- * Sets up all providers and routing for the Current NFT platform
- * Includes wallet connection, query client, and theme configuration
- */
 function App() {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
           theme={lightTheme({
-            accentColor: '#7c3aed', // Purple to match app theme
+            accentColor: '#7c3aed', // Purple to match your app theme
             accentColorForeground: 'white',
             borderRadius: 'medium',
             fontStack: 'system',
           })}
           showRecentTransactions={true}
-          modalSize="compact"
         >
           <Router>
             <Layout>
-              {/* Network status indicator */}
-              {/* <NetworkStatus /> */}
-              
-              {/* Main application routes */}
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<HomePage />} />
                 
                 {/* Map page - accessible without wallet but enhanced with wallet */}
                 <Route 
-                  path="/map" 
+                  path="/pages/MapPage" 
                   element={
                     <ProtectedRoute requireConnection={false}>
                       <MapPage />
@@ -80,17 +59,35 @@ function App() {
                   } 
                 />
                 
-                {/* Claim page - accessible without wallet initially for QR scanning */}
+                {/* Protected Routes - Require Wallet Connection */}
                 <Route 
-                  path="/claim/:tokenId" 
+                  path="/pages/ProfilePage" 
                   element={
-                    <ProtectedRoute requireConnection={false}>
-                      <ClaimPage />
+                    <ProtectedRoute>
+                      <ProfilePage />
                     </ProtectedRoute>
                   } 
                 />
                 
-                {/* Protected Routes - Require Wallet Connection */}
+                <Route 
+                  path="/pages/ArtistProfilePage" 
+                  element={
+                    <ProtectedRoute>
+                      <ArtistProfilePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                <Route 
+                  path="/pages/MintPage" 
+                  element={
+                    <ProtectedRoute>
+                      <MintPage />
+                    </ProtectedRoute>
+                  } 
+                />
+
+                {/* Alternative route paths for easier navigation */}
                 <Route 
                   path="/profile" 
                   element={
@@ -101,7 +98,7 @@ function App() {
                 />
                 
                 <Route 
-                  path="/artist" 
+                  path="/artist/:id" 
                   element={
                     <ProtectedRoute>
                       <ArtistProfilePage />
@@ -110,10 +107,10 @@ function App() {
                 />
                 
                 <Route 
-                  path="/artist/:id" 
+                  path="/map" 
                   element={
                     <ProtectedRoute requireConnection={false}>
-                      <ArtistProfilePage />
+                      <MapPage />
                     </ProtectedRoute>
                   } 
                 />
@@ -127,60 +124,27 @@ function App() {
                   } 
                 />
 
-                {/* Legacy route redirects for backward compatibility */}
-                <Route path="/pages/HomePage" element={<HomePage />} />
-                <Route path="/pages/MapPage" element={
-                  <ProtectedRoute requireConnection={false}>
-                    <MapPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/pages/ProfilePage" element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/pages/ArtistProfilePage" element={
-                  <ProtectedRoute>
-                    <ArtistProfilePage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/pages/MintPage" element={
-                  <ProtectedRoute>
-                    <MintPage />
-                  </ProtectedRoute>
-                } />
-
                 {/* Catch-all route for 404 */}
-                <Route path="*" element={<NotFoundPage />} />
+                <Route 
+                  path="*" 
+                  element={
+                    <div className="min-h-[60vh] flex items-center justify-center">
+                      <div className="text-center space-y-4">
+                        <h2 className="text-2xl font-bold text-gray-900">Page Not Found</h2>
+                        <p className="text-gray-600">The page you're looking for doesn't exist.</p>
+                        <a 
+                          href="/" 
+                          className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                          Go Home
+                        </a>
+                      </div>
+                    </div>
+                  } 
+                />
               </Routes>
             </Layout>
           </Router>
-
-          {/* Toast notifications */}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-              success: {
-                duration: 3000,
-                iconTheme: {
-                  primary: '#10b981',
-                  secondary: '#fff',
-                },
-              },
-              error: {
-                duration: 5000,
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
-                },
-              },
-            }}
-          />
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
