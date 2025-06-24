@@ -1,35 +1,12 @@
+// src/main.jsx - FIXED VERSION
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 
-// RainbowKit styles - MUST be imported first
-import '@rainbow-me/rainbowkit/styles.css'
-
-// Wagmi and RainbowKit providers
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider } from 'wagmi'
-import { RainbowKitProvider, darkTheme, lightTheme } from '@rainbow-me/rainbowkit'
-
-// Your configurations
-import { config } from './config/wagmi'
-
-const queryClient = new QueryClient()
-
+// Remove all provider imports from here - they should only be in App.jsx
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider
-          theme={lightTheme({
-            accentColor: '#7c3aed', // Purple theme to match your app
-            accentColorForeground: 'white',
-            borderRadius: 'medium',
-          })}
-        >
-          <App />
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <App />
   </React.StrictMode>,
 )

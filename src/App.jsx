@@ -1,4 +1,4 @@
-// src/App.jsx - Updated with all route fixes
+// src/App.jsx - FIXED VERSION
 import React from 'react'
 import './App.css'
 import './index.css'
@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import { config } from './config/wagmi'
 
-// Import all page components
+// Import page components
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ProfilePage from './pages/ProfilePage'
@@ -21,14 +21,12 @@ import NotFoundPage from './pages/NotFoundPage'
 
 // Import wallet integration components
 import ProtectedRoute from './components/ProtectedRoute'
-import { NetworkStatus } from './components/NetworkStatus'
 
-// RainbowKit styles
+// RainbowKit styles - MUST be imported
 import '@rainbow-me/rainbowkit/styles.css'
 
 /**
  * Query client configuration for React Query
- * Handles caching and background refetching for wallet/contract data
  */
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,10 +39,8 @@ const queryClient = new QueryClient({
 })
 
 /**
- * Main App Component
- * 
- * Sets up all providers and routing for the Current NFT platform
- * Includes wallet connection, query client, and theme configuration
+ * Main App Component - FIXED VERSION
+ * Only place where providers should be configured
  */
 function App() {
   return (
@@ -62,20 +58,39 @@ function App() {
         >
           <Router>
             <Layout>
-              {/* Network status indicator */}
-              {/* <NetworkStatus /> */}
+              {/* Toast notifications */}
+              <Toaster 
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: '#363636',
+                    color: '#fff',
+                  },
+                }}
+              />
               
               {/* Main application routes */}
               <Routes>
-                {/* Public Routes */}
+                {/* Public Routes - NO wallet required */}
                 <Route path="/" element={<HomePage />} />
                 
-                {/* Map page - accessible without wallet but enhanced with wallet */}
+                {/* Map page - accessible without wallet, enhanced with wallet */}
                 <Route 
                   path="/map" 
                   element={
                     <ProtectedRoute requireConnection={false}>
                       <MapPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Artist profile page - accessible without wallet */}
+                <Route 
+                  path="/artist/:artistId" 
+                  element={
+                    <ProtectedRoute requireConnection={false}>
+                      <ArtistProfilePage />
                     </ProtectedRoute>
                   } 
                 />
@@ -90,30 +105,12 @@ function App() {
                   } 
                 />
                 
-                {/* Protected Routes - Require Wallet Connection */}
+                {/* PROTECTED Routes - wallet required */}
                 <Route 
                   path="/profile" 
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requireConnection={true}>
                       <ProfilePage />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/artist" 
-                  element={
-                    <ProtectedRoute>
-                      <ArtistProfilePage />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/artist/:id" 
-                  element={
-                    <ProtectedRoute requireConnection={false}>
-                      <ArtistProfilePage />
                     </ProtectedRoute>
                   } 
                 />
@@ -121,66 +118,17 @@ function App() {
                 <Route 
                   path="/mint" 
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requireConnection={true}>
                       <MintPage />
                     </ProtectedRoute>
                   } 
                 />
-
-                {/* Legacy route redirects for backward compatibility */}
-                <Route path="/pages/HomePage" element={<HomePage />} />
-                <Route path="/pages/MapPage" element={
-                  <ProtectedRoute requireConnection={false}>
-                    <MapPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/pages/ProfilePage" element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/pages/ArtistProfilePage" element={
-                  <ProtectedRoute>
-                    <ArtistProfilePage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/pages/MintPage" element={
-                  <ProtectedRoute>
-                    <MintPage />
-                  </ProtectedRoute>
-                } />
-
-                {/* Catch-all route for 404 */}
+                
+                {/* 404 page */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Layout>
           </Router>
-
-          {/* Toast notifications */}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-              success: {
-                duration: 3000,
-                iconTheme: {
-                  primary: '#10b981',
-                  secondary: '#fff',
-                },
-              },
-              error: {
-                duration: 5000,
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
-                },
-              },
-            }}
-          />
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
