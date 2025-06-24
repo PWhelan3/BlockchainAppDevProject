@@ -1,4 +1,4 @@
-// src/App.jsx - FIXED VERSION
+// src/App.jsx - SIMPLIFIED VERSION
 import React from 'react'
 import './App.css'
 import './index.css'
@@ -26,21 +26,24 @@ import ProtectedRoute from './components/ProtectedRoute'
 import '@rainbow-me/rainbowkit/styles.css'
 
 /**
- * Query client configuration for React Query
+ * Query client configuration with better error handling
  */
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
+      retry: 1,
       staleTime: 1000 * 60 * 5, // 5 minutes
       cacheTime: 1000 * 60 * 10, // 10 minutes
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
     },
   },
 })
 
 /**
- * Main App Component - FIXED VERSION
- * Only place where providers should be configured
+ * Main App Component - SIMPLIFIED VERSION
  */
 function App() {
   return (
@@ -58,7 +61,7 @@ function App() {
         >
           <Router>
             <Layout>
-              {/* Toast notifications */}
+              {/* Toast notifications with better positioning */}
               <Toaster 
                 position="top-right"
                 toastOptions={{
@@ -66,6 +69,17 @@ function App() {
                   style: {
                     background: '#363636',
                     color: '#fff',
+                    zIndex: 9999,
+                  },
+                  success: {
+                    style: {
+                      background: '#10b981',
+                    },
+                  },
+                  error: {
+                    style: {
+                      background: '#ef4444',
+                    },
                   },
                 }}
               />
@@ -92,20 +106,10 @@ function App() {
                     <ProtectedRoute requireConnection={false}>
                       <ArtistProfilePage />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
                 
-                {/* Claim page - accessible without wallet initially for QR scanning */}
-                <Route 
-                  path="/claim/:tokenId" 
-                  element={
-                    <ProtectedRoute requireConnection={false}>
-                      <ClaimPage />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* PROTECTED Routes - wallet required */}
+                {/* Protected Routes - wallet connection REQUIRED */}
                 <Route 
                   path="/profile" 
                   element={
@@ -124,7 +128,16 @@ function App() {
                   } 
                 />
                 
-                {/* 404 page */}
+                <Route 
+                  path="/claim/:qrId" 
+                  element={
+                    <ProtectedRoute requireConnection={true}>
+                      <ClaimPage />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* 404 route */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Layout>
